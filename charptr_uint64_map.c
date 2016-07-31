@@ -3,9 +3,23 @@
 #include "map.h"
 #include "charptr_uint64_map.h"
 
-static uint8_t charptr_equal(charptr k1, charptr k2)
+static void charptr_init(charptr *k)
 {
-	return strcmp(k1, k2) == 0;
+}
+
+static void charptr_uninit(charptr *k)
+{
+	free(*k);
+}
+
+static void charptr_copy(charptr *k1, charptr *k2)
+{
+	*k1 = strdup(*k2);
+}
+
+static unsigned short charptr_equal(charptr *k1, charptr *k2)
+{
+	return strcmp(*k1, *k2) == 0;
 }
 
 /**
@@ -13,12 +27,13 @@ static uint8_t charptr_equal(charptr k1, charptr k2)
   * @param str the string to be hashed
   * @return the hash value of the string
   */
-static size_t charptr_hash(char *key)
+static size_t charptr_hash(charptr *key)
 {
     size_t hash_val = 5381;
     char c;
+	charptr local = *key;
 
-    while ((c = *key++))
+    while ((c = *local++))
     {
         hash_val = ((hash_val << 5) + hash_val) + c;
     }
@@ -26,13 +41,19 @@ static size_t charptr_hash(char *key)
     return hash_val;
 }
 
-static void uint64_uninit(uint64_t value)
+static void uint64_init(uint64_t *value)
 {
 }
 
-static uint64_t uint64_copy(uint64_t value)
+static void uint64_uninit(uint64_t *value)
 {
-	return value;
 }
 
-MAKE_MAP_C(map, charptr, uint64_t, strdup, free, charptr_equal, charptr_hash, uint64_uninit, uint64_copy)
+static void uint64_copy(uint64_t *v1, uint64_t *v2)
+{
+	*v1 = *v2;
+}
+
+MAKE_MAP_C(map, charptr, uint64_t,
+           charptr_init, charptr_uninit, charptr_copy, charptr_equal, charptr_hash,
+		   uint64_init, uint64_uninit, uint64_copy)

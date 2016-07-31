@@ -6,6 +6,10 @@
 int main(void)
 {
 	map_t *map = map_initialize(256);
+	if (map == NULL)
+	{
+		return 1;
+	}
 
 	map_put(map, "hello", 10);
 	map_put(map, "whyyyy", 37);
