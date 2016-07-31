@@ -5,19 +5,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "dict_t.h"
+#include "map.h"
 
-typedef struct dict_node_t
+typedef struct map_node_t
 {
 	char *key;
 	uint64_t value;
-	struct dict_node_t *next;
-} dict_node_t;
+	struct map_node_t *next;
+} map_node_t;
 
-struct dict_t
+struct map_t
 {
 	size_t num_buckets;
-	dict_node_t **buckets;
+	map_node_t **buckets;
 };
 
 static void key_uninitialize(char *key)
@@ -62,37 +62,36 @@ static size_t hash(char *key)
     return hash_val;
 }
 
-dict_t *dict_initialize(size_t buckets)
+map_t *map_initialize(size_t buckets)
 {
-	dict_t *dict = malloc(sizeof *dict);
-	if (dict == NULL)
+	map_t *map = malloc(sizeof *map);
+	if (map == NULL)
 	{
 		return NULL;
 	}
 
-	dict->num_buckets = buckets;
-	dict->buckets = calloc(dict->num_buckets, sizeof *dict->buckets);
-	if (dict->buckets == NULL)
+	map->num_buckets = buckets;
+	map->buckets = calloc(map->num_buckets, sizeof *map->buckets);
+	if (map->buckets == NULL)
 	{
-		free(dict);
+		free(map);
 		return NULL;
 	}
 
-	return dict;
+	return map;
 }
 
-void dict_uninitialize(dict_t *dict)
+void map_uninitialize(map_t *map)
 {
-	size_t i;
-	dict_clear(dict);
-	free(dict->buckets);
-	free(dict);
+	map_clear(map);
+	free(map->buckets);
+	free(map);
 }
 
-dict_status_t dict_put(dict_t *dict, char *key, uint64_t value)
+map_status_t map_put(map_t *map, char *key, uint64_t value)
 {
-	size_t bucket = hash(key) % dict->num_buckets;
-	dict_node_t *node = dict->buckets[bucket];
+	size_t bucket = hash(key) % map->num_buckets;
+	map_node_t *node = map->buckets[bucket];
 	while (node != NULL && !key_equal(key, node->key))
 	{
 		node = node->next;
@@ -109,8 +108,8 @@ dict_status_t dict_put(dict_t *dict, char *key, uint64_t value)
 		
 		//can fail if this is a dynamic allocation...hmmm
 		node->key = key_copy(key);
-		node->next = dict->buckets[bucket];
-		dict->buckets[bucket] = node;
+		node->next = map->buckets[bucket];
+		map->buckets[bucket] = node;
 	}
 
 	node->value = value_copy(value);
@@ -118,10 +117,10 @@ dict_status_t dict_put(dict_t *dict, char *key, uint64_t value)
 	return DICT_SUCCESS;
 }
 
-dict_status_t dict_get(dict_t *dict, char *key, uint64_t *value)
+map_status_t map_get(map_t *map, char *key, uint64_t *value)
 {
-	size_t bucket = hash(key) % dict->num_buckets;
-	dict_node_t *node = dict->buckets[bucket];
+	size_t bucket = hash(key) % map->num_buckets;
+	map_node_t *node = map->buckets[bucket];
 
 	while (node != NULL && !key_equal(key, node->key))
 	{
@@ -138,15 +137,15 @@ dict_status_t dict_get(dict_t *dict, char *key, uint64_t *value)
 	return DICT_SUCCESS;
 }
 
-void dict_clear(dict_t *dict)
+void map_clear(map_t *map)
 {
 	size_t i;
-	for (i = 0; i < dict->num_buckets; i++)
+	for (i = 0; i < map->num_buckets; i++)
 	{
-		dict_node_t *node = dict->buckets[i];
+		map_node_t *node = map->buckets[i];
 		while (node != NULL)
 		{
-			dict_node_t *tmp_node = node->next;
+			map_node_t *tmp_node = node->next;
 			
 			key_uninitialize(node->key);
 			value_uninitialize(node->value);
@@ -154,6 +153,6 @@ void dict_clear(dict_t *dict)
 		
 			node = tmp_node;
 		}
-		dict->buckets[i] = NULL;
+		map->buckets[i] = NULL;
 	}
 }

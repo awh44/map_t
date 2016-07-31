@@ -1,21 +1,21 @@
 #include <stdio.h>
 
-#include "dict_t.h"
+#include "map.h"
 
 int main(void)
 {
-	dict_t *dict = dict_initialize(256);
+	map_t *map = map_initialize(256);
 
-	dict_put(dict, "hello", 10);
-	dict_put(dict, "whyyyy", 37);
-	dict_put(dict, "whyyyy", 99);
+	map_put(map, "hello", 10);
+	map_put(map, "whyyyy", 37);
+	map_put(map, "whyyyy", 99);
 
 	uint64_t val1, val2;
-	dict_get(dict, "hello", &val1);
-	dict_get(dict, "whyyyy", &val2);
+	map_get(map, "hello", &val1);
+	map_get(map, "whyyyy", &val2);
 
 	printf("hello: %lu\nwhyyyy: %lu\n", val1, val2);
 
-	dict_uninitialize(dict);
+	map_uninitialize(map);
 	return 0;
 }
