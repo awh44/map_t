@@ -1,6 +1,7 @@
 #include <stdio.h>
 
-#include "map.h"
+//#include "map.h"
+#include "charptr_uint64_map.h"
 
 int main(void)
 {
